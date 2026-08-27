@@ -1,49 +1,58 @@
-﻿# 🔬 PSA Kinetics & Oncology Tracker — SMART on FHIR App
+﻿# PSA Kinetics & Oncology Tracker — SMART on FHIR App
 
-Aplicación clínica interactiva **SMART on FHIR** para el seguimiento y cálculo de cinética de biomarcadores oncológicos (**Antígeno Prostático Específico - PSA**) en pacientes con sospecha o diagnóstico de cáncer de próstata.
+Aplicación clínica interactiva **SMART on FHIR** para el seguimiento dinámico y cálculo de cinética de biomarcadores oncológicos (**Antígeno Prostático Específico - PSA**) en pacientes con sospecha, seguimiento o diagnóstico de cáncer de próstata.
+
+🔗 **Demo en vivo:** [https://jasernagarcia.github.io/psa-tracker-smart-app/](https://jasernagarcia.github.io/psa-tracker-smart-app/)
 
 ---
 
-## 🌟 Características Principales
+## Características Principales
 
-* **Estándar SMART on FHIR (HL7 FHIR R4)**: Compatible con cualquier EHR / Historia Clínica Electrónica moderna (Epic, Cerner, HAPI FHIR, SMART Health IT Sandbox).
-* **Gráfica Temporal de PSA**: Visualización interactiva con Chart.js con soporte de escalas temporales y umbrales clínicos.
-* **Correlación con Hitos Clínicos**: Mapeo de biopsias, cirugías (prostatectomía), radioterapia y bloqueos androgénicos.
+* **Estándar SMART on FHIR (HL7 FHIR R4)**: Compatible con cualquier Historia Clínica Electrónica moderna (Epic, Cerner, HAPI FHIR, SMART Health IT Sandbox).
+* **Gráfica Temporal de PSA**: Visualización interactiva con Chart.js con soporte de escalas temporales, interpolación de fechas y umbrales clínicos (4.0 ng/mL).
+* **Correlación con Hitos Clínicos y Procedimientos**: Mapeo temporal de biopsias, cirugías (prostatectomía radical), radioterapia y bloqueos androgénicos.
 * **Calculadora de Cinética Oncológica**:
-  * **PSA Velocity (PSAV)**: Medida en `ng/mL/mes` y `ng/mL/año` mediante regresión lineal.
+  * **PSA Velocity (PSAV)**: Medida en `ng/mL/mes` y `ng/mL/año` calculada mediante regresión lineal.
   * **PSA Doubling Time (PSADT)**: Tiempo de duplicación calculado por regresión logarítmica exponencial.
-* **Modo Demo Integrado**: Permite probar la aplicación interactivamente sin necesidad de conectar a un EHR (ideal para demostraciones y portfolios).
+  * **Simulador de Proyección a Futuro**: Estimación del PSA a +3, +6, +12 y +24 meses.
+* **Filtrado Dinámico de Mediciones**: Permite seleccionar o excluir tomas de PSA para recalcular la pendiente en tiempo real.
+* **Modo Demo Integrado**: Casos clínicos precargados para interactuar de inmediato sin requerir conexión EHR activa.
 
 ---
 
-## 🚀 Cómo probarlo en Local
+## Estructura del Proyecto
 
-1. Abre una terminal en la carpeta del proyecto.
+* `index.html`: Vista principal de la aplicación con dashboard clínico y modal de simulación.
+* `launch.html`: Endpoint de autenticación OAuth2 para EHRs basados en SMART on FHIR.
+* `app/app.js`: Lógica clínica, consultas FHIR y modelos matemáticos de cinética de PSA.
+* `app/style.css`: Estilos visuales del dashboard médico.
+* `lib/`: Librerías cliente FHIR y Chart.js con adaptador de fechas.
+
+---
+
+## Cómo probarlo en Local
+
+1. Clona el repositorio:
+   ```bash
+   git clone https://github.com/jasernagarcia/psa-tracker-smart-app.git
+   cd psa-tracker-smart-app
+   ```
 2. Inicia un servidor web local:
    ```bash
    npx serve .
    ```
-   *(O usando la extensión Live Server de VS Code).*
 3. Abre tu navegador en `http://localhost:3000/index.html`.
 
 ---
 
-## 🌐 Cómo publicarlo en tu GitHub Pages
+## Tecnologías Utilizadas
 
-1. Sube el código a un nuevo repositorio público de GitHub:
-   ```bash
-   git init
-   git add .
-   git commit -m "feat: initial commit - PSA Oncology SMART on FHIR App"
-   git branch -M main
-   git remote add origin https://github.com/<TU_USUARIO>/psa-tracker-smart-app.git
-   git push -u origin main
-   ```
-2. En GitHub ve a **Settings ➡️ Pages**.
-3. En **Branch**, selecciona `main` y la carpeta `/ (root)`, luego pulsa **Save**.
-4. ¡Tu aplicación estará publicada y disponible para todo el mundo en `https://<TU_USUARIO>.github.io/psa-tracker-smart-app`!
+* **HL7 FHIR R4 / SMART on FHIR**
+* **JavaScript (ES6+)**
+* **Chart.js** + `chartjs-adapter-date-fns`
+* **CSS3 / Responsive UI**
 
 ---
 
-## 👨‍💻 Autor
-Desarrollado como proyecto de innovación eHealth y estándares HL7 FHIR.
+## Autor
+**Jose Antonio Serna García** — [GitHub Profile](https://github.com/jasernagarcia)
