@@ -1,0 +1,151 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolución de PSA y Cinética Oncológica - SMART on FHIR</title>
+    <link rel="stylesheet" href="app/style.css">
+    <!-- Chart.js -->
+    <script src="lib/chart.min.js"></script>
+</head>
+<body>
+
+    <!-- Header Principal -->
+    <header class="lyra-header">
+        <div class="lyra-header-title">
+            <div style="display: flex; align-items: center;">
+                <h1>Evolución de PSA y Cinética Oncológica</h1>
+                <span class="lyra-header-badge">SMART on FHIR R4</span>
+            </div>
+            <div class="lyra-header-sub">Seguimiento Dinámico de Biomarcadores y Proyección de Recidiva</div>
+        </div>
+
+        <div class="patient-info">
+            <div class="patient-pill">
+                <strong>Paciente:</strong> <span id="patientName">-</span>
+            </div>
+            <div class="patient-pill">
+                <strong>Sexo:</strong> <span id="patientGender">-</span> | <strong>Edad:</strong> <span id="patientAge">-</span>
+            </div>
+
+            <div id="demoControls">
+                <select class="demo-selector" onchange="onPatientSelect(this.value)">
+                    <option value="patient-1">Caso 1: Progresión Bioquímica</option>
+                    <option value="patient-2">Caso 2: Post-Prostatectomía (Remisión)</option>
+                    <option value="patient-3">Caso 3: HBP Estable</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Card Panel -->
+    <div class="lyra-panel-card">
+        <!-- Pestañas exactas: Gráfica vs Simulador -->
+        <div class="lyra-modal-tabs">
+            <button id="tabBtn-grafica" class="lyra-modal-tab-btn lyra-active" onclick="setActiveTab('grafica')">
+                Evolución y Episodios
+            </button>
+            <button id="tabBtn-calculadora" class="lyra-modal-tab-btn lyra-simulator-btn" onclick="setActiveTab('calculadora')">
+                Simulador y Proyección PSA
+            </button>
+        </div>
+
+        <div class="lyra-panel-content">
+            <!-- Sección Gráfica con Overlay de Cinética -->
+            <div class="lyra-panel-chart-container">
+                <canvas id="lyraModalChartCanvas"></canvas>
+                
+                <!-- Overlay flotante idéntico al widget Lyra -->
+                <div id="chartOverlayStats" class="lyra-chart-overlay-stats" style="display: none;">
+                    <div class="lyra-overlay-stat-row">
+                        <span class="lyra-stat-dot velocity"></span>
+                        <span class="lyra-stat-lbl">Velocidad PSA:</span>
+                        <span id="overlayPSAV" class="lyra-stat-val">-</span>
+                    </div>
+                    <div class="lyra-overlay-stat-row">
+                        <span class="lyra-stat-dot doubling"></span>
+                        <span class="lyra-stat-lbl">Doubling Time:</span>
+                        <span id="overlayPSADT" class="lyra-stat-val">-</span>
+                    </div>
+                    <div id="overlayCount" class="lyra-overlay-stat-count"></div>
+                </div>
+            </div>
+
+            <!-- Sección Simulador & Calculadora (Pestaña 2) -->
+            <div id="calcSection" class="lyra-panel-calculator-section" style="display: none;">
+                <div class="lyra-calc-grid">
+                    <!-- Izquierda: Selector de Puntos y Toggles -->
+                    <div class="lyra-calc-selector">
+                        <h4>Selecciona mediciones de PSA a incluir:</h4>
+                        <div id="psaCheckboxes" class="lyra-calc-checkboxes"></div>
+
+                        <div class="lyra-calc-options">
+                            <label class="lyra-toggle-container">
+                                <input type="checkbox" id="toggleAvg" checked onchange="onTogglesChange()">
+                                <span>Mostrar Línea Umbral (4.0 ng/mL)</span>
+                            </label>
+                            <label class="lyra-toggle-container">
+                                <input type="checkbox" id="toggleProj" checked onchange="onTogglesChange()">
+                                <span>Mostrar Proyección en Gráfica</span>
+                            </label>
+                            <label class="lyra-toggle-container">
+                                <input type="checkbox" id="toggleStats" checked onchange="onTogglesChange()">
+                                <span>Mostrar Análisis de Cinética Flotante (PSAV/PSADT)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Derecha: Tarjeta de Resultados y Proyección a Futuro -->
+                    <div class="lyra-calc-results">
+                        <div class="lyra-results-card">
+                            <div class="lyra-res-item">
+                                <span class="lyra-res-label">PSA Velocidad (PSAV):</span>
+                                <div id="resPSAV" class="lyra-res-value">-</div>
+                            </div>
+                            <div class="lyra-res-item">
+                                <span class="lyra-res-label">Tiempo de Duplicación (PSADT):</span>
+                                <div id="resPSADT" class="lyra-res-value">-</div>
+                            </div>
+                            <div class="lyra-res-item">
+                                <span class="lyra-res-label">Predicción Estimada de PSA:</span>
+                                <div id="resPredicted" class="lyra-res-value" style="color: #8b5cf6;">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Chips de proyección a futuro -->
+                        <div style="margin-top: 12px;">
+                            <span style="font-size: 0.8rem; font-weight: 600; color: #475569;">Horizonte de Proyección:</span>
+                            <div class="lyra-chips-wrapper">
+                                <button class="lyra-chip-btn" data-months="3" onclick="setProjectionMonths(3)">+3 meses</button>
+                                <button class="lyra-chip-btn active" data-months="6" onclick="setProjectionMonths(6)">+6 meses</button>
+                                <button class="lyra-chip-btn" data-months="12" onclick="setProjectionMonths(12)">+12 meses</button>
+                                <button class="lyra-chip-btn" data-months="24" onclick="setProjectionMonths(24)">+24 meses</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de Historial Clínico Completo -->
+            <div class="history-section">
+                <h4 style="font-size: 0.9rem; font-weight: 700; color: #334155;">Historial Cronológico de Mediciones y Eventos</h4>
+                <div class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Tipo de Registro</th>
+                                <th>Valor</th>
+                                <th>Detalle Clínico</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>PSA Tracker & Kinetics - SMART on FHIR</title>
+    <script src="lib/fhir-client.min.js"></script>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 40px; background-color: #f8fafc; color: #1e293b;">
+    <div style="max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center;">
+        <h2 id="estado" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 12px;">Iniciando conexión SMART on FHIR...</h2>
+        <p id="subestado" style="color: #64748b; font-size: 0.9rem;">Verificando credenciales y contexto del paciente...</p>
+        <div id="resultado" style="margin-top: 20px; text-align: left;"></div>
+    </div>
+    
+    <script>
+        var urlSearch = window.location.search;
+        console.log("🚀 [LAUNCH] Parámetros recibidos:", urlSearch || "(Sin parámetros)");
+
+        if (urlSearch.indexOf("error=") > -1) {
+            var params = new URLSearchParams(urlSearch);
+            document.getElementById("estado").innerText = "Error en la autorización";
+            document.getElementById("estado").style.color = "#ef4444";
+            document.getElementById("subestado").innerText = params.get("error_description") || params.get("error");
+        } else if (urlSearch.indexOf("code=") > -1) {
+            document.getElementById("estado").innerText = "Validando autorización...";
+            FHIR.oauth2.ready(
+                function(client) {
+                    console.log("🎉 [ÉXITO] Cliente autenticado:", client);
+                    window.location.href = "index.html"; 
+                },
+                function(error) {
+                    console.error("💥 [ERROR READY]:", error);
+                    document.getElementById("estado").innerText = "Error procesando el token";
+                    document.getElementById("estado").style.color = "#ef4444";
+                    document.getElementById("subestado").innerText = String(error);
+                }
+            );
+        } else {
+            var urlActual = window.location.href.split('?')[0];
+            var urlParams = new URLSearchParams(urlSearch);
+            var iss = urlParams.get("iss");
+            var launch = urlParams.get("launch");
+            
+            var smartConfig = {
+                "client_id": "psa-tracker-app",
+                "scope": "launch patient/*.read openid profile",
+                "redirect_uri": urlActual
+            };
+
+            if (iss) {
+                smartConfig.server = iss;
+            } else {
+                // Servidor FHIR público sandbox por defecto (SMART Health IT)
+                smartConfig.server = "https://launch.smarthealthit.org/v/r4/fhir";
+            }
+
+            if (launch) {
+                smartConfig.launch = launch;
+            }
+
+            try {
+                FHIR.oauth2.authorize(smartConfig);
+            } catch (e) {
+                console.error("Error en authorize:", e);
+                // Si falla o estamos en modo local sin EHR, redirigir al index en modo demo
+                window.location.href = "index.html?demo=true";
+            }
+        }
+    </script>
+</body>
+</html>
