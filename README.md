@@ -1,4 +1,7 @@
-﻿# PSA Kinetics & Oncology Tracker — SMART on FHIR App
+# PSA Kinetics & Oncology Tracker — SMART on FHIR App
+
+> [!NOTE]
+> **Aviso:** Este repositorio corresponde a un prototipo técnico / demo histórica de validación para la integración SMART on FHIR (sandbox). No se encuentra en mantenimiento activo.
 
 Aplicación clínica interactiva **SMART on FHIR** para el seguimiento dinámico y cálculo de cinética de biomarcadores oncológicos (**Antígeno Prostático Específico - PSA**) en pacientes con sospecha, seguimiento o diagnóstico de cáncer de próstata.
 
